@@ -15,3 +15,7 @@ func NewUserService(repo UserRepo) Service {
 func (s *userService) Register(name string) domain.User {
 	return s.repo.Create(name)
 }
+
+func (s *userService) GetByUUID(uuid string) (domain.User, bool) {
+	return s.repo.FindByUUID(uuid)
+}

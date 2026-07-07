@@ -13,14 +13,6 @@ func NewHandler(svc Service) *Handler {
 	return &Handler{svc: svc}
 }
 
-type createUserRequest struct {
-	Name string `json:"name"`
-}
-
-type createUserResponse struct {
-	Username string `json:"username"`
-}
-
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -41,5 +33,5 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	created := h.svc.Register(req.Name)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(createUserResponse{Username: created.Name})
+	json.NewEncoder(w).Encode(userResponse{UUID: created.UUID, Username: created.Name})
 }

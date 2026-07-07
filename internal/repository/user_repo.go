@@ -29,3 +29,8 @@ func (us *userRepository) Create(name string) domain.User {
 
 	return user
 }
+
+func (us *userRepository) FindByUUID(uuid string) (domain.User, bool) {
+	user, ok := us.users[uuid]
+	return user, ok
+}

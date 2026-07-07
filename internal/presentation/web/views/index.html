@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ping Pong</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="card">
+    <h1>Welcome</h1>
+    <p class="subtitle">Enter your name to continue</p>
+    <form id="name-form">
+      <input type="text" id="name-input" name="name" placeholder="Your name" autocomplete="off" required />
+      <button type="submit">Continue</button>
+    </form>
+    <p id="error-message" class="error hidden"></p>
+  </div>
+
+  <script>
+    const form = document.getElementById("name-form");
+    const input = document.getElementById("name-input");
+    const errorMessage = document.getElementById("error-message");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      errorMessage.classList.add("hidden");
+
+      const name = input.value.trim();
+      if (!name) {
+        return;
+      }
+
+      try {
+        const response = await fetch("/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Something went wrong. Please try again.");
+        }
+
+        const data = await response.json();
+        document.cookie = `uuid=${encodeURIComponent(data.uuid)}; path=/`;
+        window.location.href = "/welcome";
+      } catch (err) {
+        errorMessage.textContent = err.message;
+        errorMessage.classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>

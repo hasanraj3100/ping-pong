@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"hasanraj3100/ping-pong/internal/presentation/web"
 	"hasanraj3100/ping-pong/internal/repository"
 	"hasanraj3100/ping-pong/internal/user"
 )
@@ -14,7 +15,10 @@ func main() {
 	handler := user.NewHandler(svc)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/users", handler.CreateUser)
+	mux.HandleFunc("/", web.Index)
+	mux.HandleFunc("/welcome", web.NewWelcomeHandler(svc.GetByUUID))
+	mux.Handle("/static/", web.StaticHandler())
+	mux.HandleFunc("POST /users", handler.CreateUser)
 
 	log.Println("server listening on :8080")
 	if err := http.ListenAndServe(":8080", mux); err != nil {

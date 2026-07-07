@@ -1,0 +1,95 @@
+:root {
+  --bg-gradient-start: #6a11cb;
+  --bg-gradient-end: #2575fc;
+  --card-bg: #ffffff;
+  --text-color: #1f2937;
+  --subtitle-color: #6b7280;
+  --primary: #2575fc;
+  --primary-hover: #1a5edb;
+  --error: #dc2626;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+}
+
+.card {
+  background: var(--card-bg);
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+  color: var(--text-color);
+  font-size: 1.75rem;
+}
+
+.subtitle {
+  margin: 0 0 1.5rem;
+  color: var(--subtitle-color);
+  font-size: 0.95rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+input[type="text"] {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+input[type="text"]:focus {
+  border-color: var(--primary);
+}
+
+button,
+.button-link {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.15s ease;
+}
+
+button:hover,
+.button-link:hover {
+  background: var(--primary-hover);
+}
+
+.error {
+  margin-top: 1rem;
+  color: var(--error);
+  font-size: 0.9rem;
+}
+
+.hidden {
+  display: none;
+}
