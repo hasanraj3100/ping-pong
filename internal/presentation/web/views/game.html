@@ -26,9 +26,9 @@
 
     <div class="player">
       {{if .Game.Player2.UUID}}
-        <h2>{{.Game.Player2.Name}}</h2>
+        <h2 id="player2-name">{{.Game.Player2.Name}}</h2>
       {{else}}
-        <h2 class="waiting">Waiting for player&hellip;</h2>
+        <h2 id="player2-name" class="waiting">Waiting for player&hellip;</h2>
       {{end}}
       <div class="score">0</div>
     </div>
@@ -39,6 +39,20 @@
       const input = document.getElementById("share-link");
       input.select();
       navigator.clipboard?.writeText(input.value);
+    });
+
+    const gameID = "{{.Game.ID}}";
+    const wsProtocol = location.protocol === "https:" ? "wss:" : "ws:";
+    const ws = new WebSocket(`${wsProtocol}//${location.host}/games/${gameID}/ws`);
+
+    ws.addEventListener("message", (event) => {
+      const game = JSON.parse(event.data);
+      const player2El = document.getElementById("player2-name");
+
+      if (game.Player2 && game.Player2.UUID) {
+        player2El.textContent = game.Player2.Name;
+        player2El.classList.remove("waiting");
+      }
     });
   </script>
 </body>

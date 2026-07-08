@@ -1,21 +1,30 @@
 package game
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
 	"hasanraj3100/ping-pong/internal/domain"
+
+	"github.com/coder/websocket"
 )
 
 type UserLookup func(uuid string) (domain.User, bool)
 
+type Hub interface {
+	Broadcaster
+	Join(ctx context.Context, room string, conn *websocket.Conn)
+}
+
 type Handler struct {
 	svc    *GameService
 	lookup UserLookup
+	hub    Hub
 }
 
-func NewHandler(svc *GameService, lookup UserLookup) *Handler {
-	return &Handler{svc: svc, lookup: lookup}
+func NewHandler(svc *GameService, lookup UserLookup, hub Hub) *Handler {
+	return &Handler{svc: svc, lookup: lookup, hub: hub}
 }
 
 func (h *Handler) CreateGame(w http.ResponseWriter, r *http.Request) {
@@ -65,4 +74,42 @@ func (h *Handler) JoinGame(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(joined)
+}
+
+func (h *Handler) WS(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("uuid")
+	if err != nil {
+		http.Error(w, "not logged in", http.StatusUnauthorized)
+		return
+	}
+
+	if _, ok := h.lookup(cookie.Value); !ok {
+		http.Error(w, "not logged in", http.StatusUnauthorized)
+		return
+	}
+
+	gameID := r.PathValue("id")
+	g, ok := h.svc.GetGame(gameID)
+	if !ok {
+		http.Error(w, "game not found", http.StatusNotFound)
+		return
+	}
+
+	conn, err := websocket.Accept(w, r, nil)
+	if err != nil {
+		return
+	}
+	defer conn.CloseNow()
+
+	ctx := r.Context()
+
+	data, err := json.Marshal(g)
+	if err != nil {
+		return
+	}
+	if err := conn.Write(ctx, websocket.MessageText, data); err != nil {
+		return
+	}
+
+	h.hub.Join(ctx, gameID, conn)
 }

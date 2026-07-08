@@ -7,3 +7,7 @@ type GameRepo interface {
 	FindByID(id string) (domain.Game, bool)
 	Update(g domain.Game) domain.Game
 }
+
+type Broadcaster interface {
+	Broadcast(room string, v any)
+}
