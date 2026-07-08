@@ -93,3 +93,96 @@ button:hover,
 .hidden {
   display: none;
 }
+
+.game-card {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.player {
+  flex: 0 0 140px;
+  text-align: center;
+}
+
+.player h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text-color);
+  word-break: break-word;
+}
+
+.player h2.waiting {
+  color: var(--subtitle-color);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+.player .score {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.board {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.board-surface {
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 2 / 1;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+}
+
+.share-box {
+  width: 100%;
+}
+
+.share-box label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--subtitle-color);
+  margin-bottom: 0.35rem;
+}
+
+.share-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.share-row input[type="text"] {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  background: #f9fafb;
+}
+
+.share-row button {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .game-card {
+    flex-direction: column;
+  }
+}

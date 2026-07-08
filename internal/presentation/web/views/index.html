@@ -22,6 +22,14 @@
     const input = document.getElementById("name-input");
     const errorMessage = document.getElementById("error-message");
 
+    function safeRedirectTarget() {
+      const target = new URLSearchParams(window.location.search).get("redirect");
+      if (target && target.startsWith("/") && !target.startsWith("//") && !target.includes("://")) {
+        return target;
+      }
+      return "/welcome";
+    }
+
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       errorMessage.classList.add("hidden");
@@ -44,7 +52,7 @@
 
         const data = await response.json();
         document.cookie = `uuid=${encodeURIComponent(data.uuid)}; path=/`;
-        window.location.href = "/welcome";
+        window.location.href = safeRedirectTarget();
       } catch (err) {
         errorMessage.textContent = err.message;
         errorMessage.classList.remove("hidden");

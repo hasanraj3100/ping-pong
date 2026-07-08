@@ -10,7 +10,29 @@
   <div class="card">
     <h1 id="welcome-heading">Welcome, {{.Name}}!</h1>
     <p class="subtitle">We're glad to have you here.</p>
+    <button id="start-game-btn" type="button">Start New Game</button>
+    <p id="error-message" class="error hidden"></p>
     <a class="button-link" href="/">Back</a>
   </div>
+
+  <script>
+    document.getElementById("start-game-btn").addEventListener("click", async () => {
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.classList.add("hidden");
+
+      try {
+        const response = await fetch("/games", { method: "POST" });
+        if (!response.ok) {
+          throw new Error("Could not start a game. Please try again.");
+        }
+
+        const game = await response.json();
+        window.location.href = `/games/${game.ID}`;
+      } catch (err) {
+        errorMessage.textContent = err.message;
+        errorMessage.classList.remove("hidden");
+      }
+    });
+  </script>
 </body>
 </html>
