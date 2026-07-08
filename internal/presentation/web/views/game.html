@@ -6,21 +6,18 @@
   <title>Ping Pong Game</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body>
+<body class="game-page">
   <div class="game-card">
     <div class="player">
       <h2>{{.Game.Player1.Name}}</h2>
       <div class="score">0</div>
     </div>
 
-    <div class="board">
-      <div class="board-surface">🏓</div>
-      <div class="share-box">
-        <label for="share-link">Invite a friend</label>
-        <div class="share-row">
-          <input id="share-link" type="text" readonly value="{{.ShareURL}}" />
-          <button id="copy-btn" type="button">Copy</button>
-        </div>
+    <div class="share-box">
+      <label for="share-link">Invite a friend</label>
+      <div class="share-row">
+        <input id="share-link" type="text" readonly value="{{.ShareURL}}" />
+        <button id="copy-btn" type="button">Copy</button>
       </div>
     </div>
 
@@ -34,6 +31,9 @@
     </div>
   </div>
 
+  <div class="game-stage">
+    <canvas id="game-canvas"></canvas>
+  </div>
   <script>
     document.getElementById("copy-btn").addEventListener("click", () => {
       const input = document.getElementById("share-link");
@@ -55,5 +55,8 @@
       }
     });
   </script>
+
+
+  <script type="module" src="/static/main.js"></script>
 </body>
 </html>
