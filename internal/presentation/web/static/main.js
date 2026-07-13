@@ -1,5 +1,5 @@
 // Start with default options
-import kaplay from "https://unpkg.com/kaplay@3001.0.19/dist/kaplay.mjs";
+import kaplay from "./kaplay.mjs";
 
 const SCREEN_W = 500;
 const SCREEN_H = 300;
