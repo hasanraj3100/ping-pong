@@ -20,6 +20,10 @@ func (repo *GameRepository) Create(creator domain.User) domain.Game {
 	game := domain.Game{
 		ID:      uuid.NewString(),
 		Player1: creator,
+		State: domain.GameData{
+			Player1YPosition: 110,
+			Player2YPosition: 110,
+		},
 	}
 
 	repo.games[game.ID] = game

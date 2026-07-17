@@ -38,7 +38,7 @@ func (h *Hub) Broadcast(room string, v any) {
 	}
 }
 
-func (h *Hub) Join(ctx context.Context, room string, conn *websocket.Conn) {
+func (h *Hub) Join(ctx context.Context, room string, conn *websocket.Conn, onMessage func(data []byte)) {
 	c := &client{send: make(chan []byte, 8)}
 
 	h.mu.Lock()
@@ -72,8 +72,12 @@ func (h *Hub) Join(ctx context.Context, room string, conn *websocket.Conn) {
 	}()
 
 	for {
-		if _, _, err := conn.Read(ctx); err != nil {
+		_, data, err := conn.Read(ctx)
+		if err != nil {
 			return
+		}
+		if onMessage != nil {
+			onMessage(data)
 		}
 	}
 }

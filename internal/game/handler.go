@@ -14,7 +14,7 @@ type UserLookup func(uuid string) (domain.User, bool)
 
 type Hub interface {
 	Broadcaster
-	Join(ctx context.Context, room string, conn *websocket.Conn)
+	Join(ctx context.Context, room string, conn *websocket.Conn, onMessage func(data []byte))
 }
 
 type Handler struct {
@@ -83,7 +83,8 @@ func (h *Handler) WS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, ok := h.lookup(cookie.Value); !ok {
+	user, ok := h.lookup(cookie.Value)
+	if !ok {
 		http.Error(w, "not logged in", http.StatusUnauthorized)
 		return
 	}
@@ -111,5 +112,13 @@ func (h *Handler) WS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.hub.Join(ctx, gameID, conn)
+	onMessage := func(data []byte) {
+		var msg ClientMsg
+		if err := json.Unmarshal(data, &msg); err != nil {
+			return
+		}
+		h.svc.HandleClientMsg(msg, user, gameID)
+	}
+
+	h.hub.Join(ctx, gameID, conn, onMessage)
 }

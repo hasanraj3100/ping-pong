@@ -46,7 +46,18 @@
     const ws = new WebSocket(`${wsProtocol}//${location.host}/games/${gameID}/ws`);
 
     ws.addEventListener("message", (event) => {
-      const game = JSON.parse(event.data);
+      const msg = JSON.parse(event.data);
+
+      if (msg.Player === "player1") {
+        window.p1TargetY = msg.YPos;
+        return;
+      }
+      if (msg.Player === "player2") {
+        window.p2TargetY = msg.YPos;
+        return;
+      }
+
+      const game = msg;
       const player2El = document.getElementById("player2-name");
 
       if (game.Player2 && game.Player2.UUID) {
@@ -54,6 +65,30 @@
         player2El.classList.remove("waiting");
       }
     });
+
+    const MOVE_INTERVAL_MS = 50;
+    const pressedKeys = { up: false, down: false };
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowUp") pressedKeys.up = true;
+      if (event.key === "ArrowDown") pressedKeys.down = true;
+    });
+
+    document.addEventListener("keyup", (event) => {
+      if (event.key === "ArrowUp") pressedKeys.up = false;
+      if (event.key === "ArrowDown") pressedKeys.down = false;
+    });
+
+    setInterval(() => {
+      if (ws.readyState !== WebSocket.OPEN) return;
+
+      if (pressedKeys.up) {
+        ws.send(JSON.stringify({ Type: "move", Value: "u" }));
+      }
+      if (pressedKeys.down) {
+        ws.send(JSON.stringify({ Type: "move", Value: "d" }));
+      }
+    }, MOVE_INTERVAL_MS);
   </script>
 
 
