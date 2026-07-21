@@ -38,11 +38,13 @@ scene("main", () => {
   player1.onUpdate(() => {
     const clampedTarget = Math.max(0, Math.min(SCREEN_H - PADDLE_H, window.p1TargetY));
     player1.pos.y = clampedTarget;
+    window.p1TargetY = player1.pos.y;
   });
 
   player2.onUpdate(() => {
     const clampedTarget = Math.max(0, Math.min(SCREEN_H - PADDLE_H, window.p2TargetY));
     player2.pos.y = clampedTarget;
+    window.p2TargetY = player2.pos.y;
   });
 
 })

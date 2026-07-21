@@ -97,5 +97,5 @@ func (s *GameService) HandleClientMsg(msg ClientMsg, user domain.User, room stri
 		yPos = updated.State.Player2YPosition
 	}
 
-	s.broadcaster.Broadcast(room, MoveMsg{Player: role, YPos: yPos})
+	s.broadcaster.Broadcast(room, MoveMsg{Player: role, YPos: yPos, Sequence: msg.Sequence})
 }

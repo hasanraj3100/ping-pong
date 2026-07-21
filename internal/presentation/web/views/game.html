@@ -35,6 +35,9 @@
     <canvas id="game-canvas"></canvas>
   </div>
   <script>
+    const myRole = "{{.Role}}"; // "player1", "player2", or "spectator"
+    let curr_sequence = 0;
+
     document.getElementById("copy-btn").addEventListener("click", () => {
       const input = document.getElementById("share-link");
       input.select();
@@ -48,11 +51,18 @@
     ws.addEventListener("message", (event) => {
       const msg = JSON.parse(event.data);
 
+
       if (msg.Player === "player1") {
+
+        if (myRole === "player1" && msg.Sequence < curr_sequence) return; // stale data
+
         window.p1TargetY = msg.YPos;
         return;
       }
       if (msg.Player === "player2") {
+
+        if (myRole === "player2" && msg.Sequence < curr_sequence) return; // stale data
+
         window.p2TargetY = msg.YPos;
         return;
       }
@@ -79,14 +89,27 @@
       if (event.key === "ArrowDown") pressedKeys.down = false;
     });
 
+    function updateYValue(value) {
+      if (myRole === "player1") {
+        window.p1TargetY += value;
+      } else {
+        window.p2TargetY += value;
+      }
+    }
+
     setInterval(() => {
       if (ws.readyState !== WebSocket.OPEN) return;
 
       if (pressedKeys.up) {
-        ws.send(JSON.stringify({ Type: "move", Value: "u" }));
+        curr_sequence++;
+        updateYValue(-10);
+        ws.send(JSON.stringify({ Type: "move", Value: "u" , Sequence: curr_sequence}));
       }
+
       if (pressedKeys.down) {
-        ws.send(JSON.stringify({ Type: "move", Value: "d" }));
+        curr_sequence++; 
+        updateYValue(10);
+        ws.send(JSON.stringify({ Type: "move", Value: "d", Sequence: curr_sequence }));
       }
     }, MOVE_INTERVAL_MS);
   </script>

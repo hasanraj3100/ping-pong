@@ -13,16 +13,21 @@ import (
 //go:embed views static
 var files embed.FS
 
-var welcomeTmpl = template.Must(template.ParseFS(files, "views/welcome.html"))
-var gameTmpl = template.Must(template.ParseFS(files, "views/game.html"))
+var (
+	welcomeTmpl = template.Must(template.ParseFS(files, "views/welcome.html"))
+	gameTmpl    = template.Must(template.ParseFS(files, "views/game.html"))
+)
 
-type UserLookup func(uuid string) (domain.User, bool)
-type GameLookup func(id string) (domain.Game, bool)
-type GameJoiner func(id string, player domain.User) (domain.Game, error)
+type (
+	UserLookup func(uuid string) (domain.User, bool)
+	GameLookup func(id string) (domain.Game, bool)
+	GameJoiner func(id string, player domain.User) (domain.Game, error)
+)
 
 type gamePageData struct {
 	Game     domain.Game
 	ShareURL string
+	Role     string
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -83,9 +88,19 @@ func NewGamePageHandler(lookupUser UserLookup, lookupGame GameLookup, joinGame G
 			scheme = "https"
 		}
 
+		role := "spectator"
+
+		switch user.UUID {
+		case g.Player1.UUID:
+			role = "player1"
+		case g.Player2.UUID:
+			role = "player2"
+		}
+
 		data := gamePageData{
 			Game:     g,
 			ShareURL: scheme + "://" + r.Host + "/games/" + g.ID,
+			Role:     role,
 		}
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
