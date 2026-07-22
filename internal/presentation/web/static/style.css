@@ -140,6 +140,31 @@ button:hover,
   color: var(--primary);
 }
 
+.ready-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #fef2f2;
+  color: var(--error);
+}
+
+.ready-badge .ready-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ready-badge.ready {
+  background: #ecfdf5;
+  color: #16a34a;
+}
+
 .share-box {
   flex: 1;
   max-width: 260px;

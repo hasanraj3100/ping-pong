@@ -10,4 +10,6 @@ type Game struct {
 type GameData struct {
 	Player1YPosition float32
 	Player2YPosition float32
+	Player1Ready     bool
+	Player2Ready     bool
 }

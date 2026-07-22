@@ -10,6 +10,9 @@
   <div class="game-card">
     <div class="player">
       <h2>{{.Game.Player1.Name}}</h2>
+      <span id="player1-ready" class="ready-badge not-ready">
+        <span class="ready-dot"></span><span id="player1ReadyState">Not Ready</span>
+      </span>
       <div class="score">0</div>
     </div>
 
@@ -24,8 +27,14 @@
     <div class="player">
       {{if .Game.Player2.UUID}}
         <h2 id="player2-name">{{.Game.Player2.Name}}</h2>
+        <span id="player2-ready" class="ready-badge not-ready">
+          <span class="ready-dot"></span><span id="player2ReadyState">Not Ready</span>
+        </span>
       {{else}}
         <h2 id="player2-name" class="waiting">Waiting for player&hellip;</h2>
+        <span id="player2-ready" class="ready-badge not-ready hidden">
+          <span class="ready-dot"></span><span id="player2ReadyState">Not Ready</span>
+        </span>
       {{end}}
       <div class="score">0</div>
     </div>
@@ -37,6 +46,7 @@
   <script>
     const myRole = "{{.Role}}"; // "player1", "player2", or "spectator"
     let curr_sequence = 0;
+    let curr_ready_status = false;
 
     document.getElementById("copy-btn").addEventListener("click", () => {
       const input = document.getElementById("share-link");
@@ -51,42 +61,67 @@
     ws.addEventListener("message", (event) => {
       const msg = JSON.parse(event.data);
 
+      if (msg.Type == "match_found") {
+        const player2El = document.getElementById("player2-name");
+        const player2ReadyEl = document.getElementById("player2-ready");
 
-      if (msg.Player === "player1") {
+        if (msg.Opponent ) {
+          player2El.textContent = msg.Opponent;
+          player2El.classList.remove("waiting");
+          player2ReadyEl.classList.remove("hidden");
+        }
+      }
 
-        if (myRole === "player1" && msg.Sequence < curr_sequence) return; // stale data
+      else if (msg.Type == "move") {
 
-        window.p1TargetY = msg.YPos;
+        if (msg.Player === "player1") {
+          if (myRole === "player1" && msg.Sequence < curr_sequence) return; // stale data
+          window.p1TargetY = msg.YPos;
+          return;
+        }
+
+        if (msg.Player === "player2") {
+          if (myRole === "player2" && msg.Sequence < curr_sequence) return; // stale data
+          window.p2TargetY = msg.YPos;
+          return;
+        }
+
         return;
       }
-      if (msg.Player === "player2") {
 
-        if (myRole === "player2" && msg.Sequence < curr_sequence) return; // stale data
+      else if (msg.Type == "ready") {
+        const player1Ready = msg.Player1Ready;
+        const player2Ready = msg.Player2Ready;
 
-        window.p2TargetY = msg.YPos;
-        return;
+        const player1ReadyEl = document.getElementById("player1-ready");
+        const player2ReadyEl = document.getElementById("player2-ready");
+        const player1ReadyState = document.getElementById("player1ReadyState");
+        const player2ReadyState = document.getElementById("player2ReadyState");
+
+        player1ReadyEl.classList.toggle("ready", player1Ready);
+        player1ReadyEl.classList.toggle("not-ready", !player1Ready);
+        player1ReadyState.textContent = player1Ready ? "Ready" : "Not Ready";
+
+        player2ReadyEl.classList.toggle("ready", player2Ready);
+        player2ReadyEl.classList.toggle("not-ready", !player2Ready);
+        player2ReadyState.textContent = player2Ready ? "Ready" : "Not Ready";
       }
-
-      const game = msg;
-      const player2El = document.getElementById("player2-name");
-
-      if (game.Player2 && game.Player2.UUID) {
-        player2El.textContent = game.Player2.Name;
-        player2El.classList.remove("waiting");
-      }
+      
     });
 
     const MOVE_INTERVAL_MS = 50;
-    const pressedKeys = { up: false, down: false };
+    const pressedKeys = { up: false, down: false, space : false };
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "ArrowUp") pressedKeys.up = true;
       if (event.key === "ArrowDown") pressedKeys.down = true;
+      if (event.key === " ") pressedKeys.space = true;
     });
 
     document.addEventListener("keyup", (event) => {
       if (event.key === "ArrowUp") pressedKeys.up = false;
       if (event.key === "ArrowDown") pressedKeys.down = false;
+      if (event.key === " ") pressedKeys.space = false;
     });
 
     function updateYValue(value) {
@@ -110,6 +145,11 @@
         curr_sequence++; 
         updateYValue(10);
         ws.send(JSON.stringify({ Type: "move", Value: "d", Sequence: curr_sequence }));
+      }
+
+      if (pressedKeys.space && !curr_ready_status) {
+        curr_ready_status = true;
+        ws.send(JSON.stringify({Type: "ready"}));
       }
     }, MOVE_INTERVAL_MS);
   </script>

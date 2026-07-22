@@ -44,7 +44,7 @@ func (s *GameService) JoinGame(gameID string, joiner domain.User) (domain.Game, 
 
 	g.Player2 = joiner
 	updated := s.repo.Update(g)
-	s.broadcaster.Broadcast(updated.ID, updated)
+	s.broadcaster.Broadcast(updated.ID, Player2Joined{Type: "match_found", Opponent: updated.Player2.Name})
 	return updated, nil
 }
 
@@ -59,10 +59,15 @@ func clampY(y float32) float32 {
 }
 
 func (s *GameService) HandleClientMsg(msg ClientMsg, user domain.User, room string) {
-	if msg.Type != "move" {
-		return
+	switch msg.Type {
+	case "move":
+		s.HandleMove(msg, user, room)
+	case "ready":
+		s.HandleReady(msg, user, room)
 	}
+}
 
+func (s *GameService) HandleMove(msg ClientMsg, user domain.User, room string) {
 	var delta float32
 	switch msg.Value {
 	case "u":
@@ -97,5 +102,25 @@ func (s *GameService) HandleClientMsg(msg ClientMsg, user domain.User, room stri
 		yPos = updated.State.Player2YPosition
 	}
 
-	s.broadcaster.Broadcast(room, MoveMsg{Player: role, YPos: yPos, Sequence: msg.Sequence})
+	s.broadcaster.Broadcast(room, MoveMsg{Type: "move", Player: role, YPos: yPos, Sequence: msg.Sequence})
+}
+
+func (s *GameService) HandleReady(msg ClientMsg, user domain.User, room string) {
+	g, ok := s.repo.FindByID(room)
+	if !ok {
+		return
+	}
+
+	switch user.UUID {
+	case g.Player1.UUID:
+		g.State.Player1Ready = true
+	case g.Player2.UUID:
+		g.State.Player2Ready = true
+	default:
+		return
+	}
+	// TODO: if both players are ready, game starts
+
+	updated := s.repo.Update(g)
+	s.broadcaster.Broadcast(room, ReadyMsg{Type: "ready", Player1Ready: updated.State.Player1Ready, Player2Ready: updated.State.Player2Ready})
 }
