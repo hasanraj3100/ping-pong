@@ -11,6 +11,8 @@ window.p1TargetY = (SCREEN_H / 2) - (PADDLE_H / 2);
 window.p2TargetY = (SCREEN_H / 2) - (PADDLE_H / 2);
 window.ballX = SCREEN_W / 2;
 window.ballY = SCREEN_H / 2;
+window.ballVX = 0;
+window.ballVY = 0;
 
 kaplay({
   width: SCREEN_W,
@@ -58,6 +60,17 @@ scene("main", () => {
   ]);
 
   ball.onUpdate(() => {
+    window.ballX += window.ballVX * dt();
+    window.ballY += window.ballVY * dt();
+
+    if (window.ballY < 0) {
+      window.ballY = 0;
+      window.ballVY = -window.ballVY;
+    } else if (window.ballY > SCREEN_H) {
+      window.ballY = SCREEN_H;
+      window.ballVY = -window.ballVY;
+    }
+
     ball.pos.x = window.ballX - BALL_SIZE / 2;
     ball.pos.y = window.ballY - BALL_SIZE / 2;
   });

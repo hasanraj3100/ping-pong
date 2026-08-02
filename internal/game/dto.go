@@ -28,6 +28,8 @@ type BallMsg struct {
 	Type string
 	X    float32
 	Y    float32
+	VX   float32
+	VY   float32
 }
 
 type ScoreMsg struct {

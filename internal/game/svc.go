@@ -189,7 +189,8 @@ func (s *GameService) runBallLoop(room string) {
 
 			updated := s.repo.Update(g)
 			s.broadcaster.Broadcast(room, ScoreMsg{Type: "score", Player1Score: updated.State.Player1Score, Player2Score: updated.State.Player2Score})
-			s.broadcaster.Broadcast(room, BallMsg{Type: "ball", X: updated.State.BallX, Y: updated.State.BallY})
+			// ball is parked at center until both players ready up again, so report it at rest
+			s.broadcaster.Broadcast(room, BallMsg{Type: "ball", X: updated.State.BallX, Y: updated.State.BallY, VX: 0, VY: 0})
 			s.broadcaster.Broadcast(room, ReadyMsg{Type: "ready", Player1Ready: updated.State.Player1Ready, Player2Ready: updated.State.Player2Ready})
 			return
 		}
@@ -206,7 +207,7 @@ func (s *GameService) runBallLoop(room string) {
 		}
 
 		updated := s.repo.Update(g)
-		s.broadcaster.Broadcast(room, BallMsg{Type: "ball", X: updated.State.BallX, Y: updated.State.BallY})
+		s.broadcaster.Broadcast(room, BallMsg{Type: "ball", X: updated.State.BallX, Y: updated.State.BallY, VX: updated.State.BallVX, VY: updated.State.BallVY})
 	}
 }
 
