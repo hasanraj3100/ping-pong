@@ -13,7 +13,7 @@
       <span id="player1-ready" class="ready-badge not-ready">
         <span class="ready-dot"></span><span id="player1ReadyState">Not Ready</span>
       </span>
-      <div class="score">0</div>
+      <div id="player1-score" class="score">0</div>
     </div>
 
     <div class="share-box">
@@ -36,7 +36,7 @@
           <span class="ready-dot"></span><span id="player2ReadyState">Not Ready</span>
         </span>
       {{end}}
-      <div class="score">0</div>
+      <div id="player2-score" class="score">0</div>
     </div>
   </div>
 
@@ -86,6 +86,19 @@
           return;
         }
 
+        return;
+      }
+
+      else if (msg.Type == "ball") {
+        window.ballX = msg.X;
+        window.ballY = msg.Y;
+        return;
+      }
+
+      else if (msg.Type == "score") {
+        document.getElementById("player1-score").textContent = msg.Player1Score;
+        document.getElementById("player2-score").textContent = msg.Player2Score;
+        curr_ready_status = false;
         return;
       }
 

@@ -5,9 +5,12 @@ const SCREEN_W = 500;
 const SCREEN_H = 300;
 const PADDLE_W = 15;
 const PADDLE_H = 80;
+const BALL_SIZE = 10;
 
 window.p1TargetY = (SCREEN_H / 2) - (PADDLE_H / 2);
 window.p2TargetY = (SCREEN_H / 2) - (PADDLE_H / 2);
+window.ballX = SCREEN_W / 2;
+window.ballY = SCREEN_H / 2;
 
 kaplay({
   width: SCREEN_W,
@@ -45,6 +48,18 @@ scene("main", () => {
     const clampedTarget = Math.max(0, Math.min(SCREEN_H - PADDLE_H, window.p2TargetY));
     player2.pos.y = clampedTarget;
     window.p2TargetY = player2.pos.y;
+  });
+
+  const ball = add([
+    rect(BALL_SIZE, BALL_SIZE),
+    pos(window.ballX - BALL_SIZE / 2, window.ballY - BALL_SIZE / 2),
+    color("#E4DCCF"),
+    "ball",
+  ]);
+
+  ball.onUpdate(() => {
+    ball.pos.x = window.ballX - BALL_SIZE / 2;
+    ball.pos.y = window.ballY - BALL_SIZE / 2;
   });
 
 })

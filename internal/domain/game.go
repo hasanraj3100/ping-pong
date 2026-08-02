@@ -12,4 +12,12 @@ type GameData struct {
 	Player2YPosition float32
 	Player1Ready     bool
 	Player2Ready     bool
+
+	BallX  float32
+	BallY  float32
+	BallVX float32
+	BallVY float32
+
+	Player1Score int
+	Player2Score int
 }

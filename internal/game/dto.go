@@ -23,3 +23,15 @@ type ReadyMsg struct {
 	Player1Ready bool
 	Player2Ready bool
 }
+
+type BallMsg struct {
+	Type string
+	X    float32
+	Y    float32
+}
+
+type ScoreMsg struct {
+	Type         string
+	Player1Score int
+	Player2Score int
+}

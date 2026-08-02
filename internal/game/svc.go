@@ -1,12 +1,26 @@
 package game
 
 import (
+	"time"
+
 	"hasanraj3100/ping-pong/internal/domain"
 )
 
 const (
 	paddleStep = 10
 	maxPaddleY = 220
+
+	courtWidth  = 500
+	courtHeight = 300
+
+	paddleOffset = 10
+	paddleWidth  = 15
+	paddleHeight = 80
+
+	ballInitialVX = 150
+	ballInitialVY = 90
+
+	tickRate = 50 * time.Millisecond
 )
 
 type GameService struct {
@@ -113,14 +127,96 @@ func (s *GameService) HandleReady(msg ClientMsg, user domain.User, room string) 
 
 	switch user.UUID {
 	case g.Player1.UUID:
+		if g.State.Player1Ready {
+			return
+		}
 		g.State.Player1Ready = true
 	case g.Player2.UUID:
+		if g.State.Player2Ready {
+			return
+		}
 		g.State.Player2Ready = true
 	default:
 		return
 	}
-	// TODO: if both players are ready, game starts
+
+	starting := g.State.Player1Ready && g.State.Player2Ready
+	if starting {
+		resetBall(&g.State)
+	}
 
 	updated := s.repo.Update(g)
 	s.broadcaster.Broadcast(room, ReadyMsg{Type: "ready", Player1Ready: updated.State.Player1Ready, Player2Ready: updated.State.Player2Ready})
+
+	if starting {
+		go s.runBallLoop(room)
+	}
+}
+
+func (s *GameService) runBallLoop(room string) {
+	ticker := time.NewTicker(tickRate)
+	defer ticker.Stop()
+	dt := float32(tickRate.Seconds())
+
+	for range ticker.C {
+		g, ok := s.repo.FindByID(room)
+		if !ok {
+			return
+		}
+
+		state := &g.State
+		state.BallX += state.BallVX * dt
+		state.BallY += state.BallVY * dt
+
+		if state.BallY < 0 {
+			state.BallY = 0
+			state.BallVY = -state.BallVY
+		} else if state.BallY > courtHeight {
+			state.BallY = courtHeight
+			state.BallVY = -state.BallVY
+		}
+
+		if state.BallX < 0 {
+			state.Player2Score++
+		} else if state.BallX > courtWidth {
+			state.Player1Score++
+		}
+
+		if state.BallX < 0 || state.BallX > courtWidth {
+			resetBall(state)
+			state.Player1Ready = false
+			state.Player2Ready = false
+
+			updated := s.repo.Update(g)
+			s.broadcaster.Broadcast(room, ScoreMsg{Type: "score", Player1Score: updated.State.Player1Score, Player2Score: updated.State.Player2Score})
+			s.broadcaster.Broadcast(room, BallMsg{Type: "ball", X: updated.State.BallX, Y: updated.State.BallY})
+			s.broadcaster.Broadcast(room, ReadyMsg{Type: "ready", Player1Ready: updated.State.Player1Ready, Player2Ready: updated.State.Player2Ready})
+			return
+		}
+
+		leftPaddleEdge := float32(paddleOffset + paddleWidth)
+		rightPaddleEdge := float32(courtWidth - paddleOffset - paddleWidth)
+
+		if state.BallVX < 0 && state.BallX <= leftPaddleEdge && paddleHit(state.BallY, state.Player1YPosition) {
+			state.BallX = leftPaddleEdge
+			state.BallVX = -state.BallVX
+		} else if state.BallVX > 0 && state.BallX >= rightPaddleEdge && paddleHit(state.BallY, state.Player2YPosition) {
+			state.BallX = rightPaddleEdge
+			state.BallVX = -state.BallVX
+		}
+
+		updated := s.repo.Update(g)
+		s.broadcaster.Broadcast(room, BallMsg{Type: "ball", X: updated.State.BallX, Y: updated.State.BallY})
+	}
+}
+
+func paddleHit(ballY, paddleY float32) bool {
+	return ballY >= paddleY && ballY <= paddleY+paddleHeight
+}
+
+func resetBall(state *domain.GameData) {
+	state.BallX = courtWidth / 2
+	state.BallY = courtHeight / 2
+	state.BallVX = ballInitialVX
+	state.BallVY = ballInitialVY
 }
