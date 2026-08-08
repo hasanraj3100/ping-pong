@@ -20,4 +20,5 @@ type GameData struct {
 
 	Player1Score int
 	Player2Score int
+	Winner       string
 }

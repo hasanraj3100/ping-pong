@@ -37,3 +37,8 @@ type ScoreMsg struct {
 	Player1Score int
 	Player2Score int
 }
+
+type GameOverMsg struct {
+	Type   string
+	Winner string
+}

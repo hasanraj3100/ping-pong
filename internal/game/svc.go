@@ -20,6 +20,8 @@ const (
 	ballInitialVX = 150
 	ballInitialVY = 90
 
+	winningScore = 10
+
 	tickRate = 50 * time.Millisecond
 )
 
@@ -125,6 +127,10 @@ func (s *GameService) HandleReady(msg ClientMsg, user domain.User, room string) 
 		return
 	}
 
+	if g.State.Winner != "" {
+		return
+	}
+
 	switch user.UUID {
 	case g.Player1.UUID:
 		if g.State.Player1Ready {
@@ -187,11 +193,22 @@ func (s *GameService) runBallLoop(room string) {
 			state.Player1Ready = false
 			state.Player2Ready = false
 
+			if state.Player1Score >= winningScore {
+				state.Winner = "player1"
+			} else if state.Player2Score >= winningScore {
+				state.Winner = "player2"
+			}
+
 			updated := s.repo.Update(g)
 			s.broadcaster.Broadcast(room, ScoreMsg{Type: "score", Player1Score: updated.State.Player1Score, Player2Score: updated.State.Player2Score})
 			// ball is parked at center until both players ready up again, so report it at rest
 			s.broadcaster.Broadcast(room, BallMsg{Type: "ball", X: updated.State.BallX, Y: updated.State.BallY, VX: 0, VY: 0})
-			s.broadcaster.Broadcast(room, ReadyMsg{Type: "ready", Player1Ready: updated.State.Player1Ready, Player2Ready: updated.State.Player2Ready})
+
+			if updated.State.Winner != "" {
+				s.broadcaster.Broadcast(room, GameOverMsg{Type: "game_over", Winner: updated.State.Winner})
+			} else {
+				s.broadcaster.Broadcast(room, ReadyMsg{Type: "ready", Player1Ready: updated.State.Player1Ready, Player2Ready: updated.State.Player2Ready})
+			}
 			return
 		}
 
