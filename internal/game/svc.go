@@ -20,6 +20,8 @@ const (
 	ballInitialVX = 150
 	ballInitialVY = 90
 
+	paddleHitSpeedMultiplier = 1.1
+
 	winningScore = 10
 
 	tickRate = 50 * time.Millisecond
@@ -217,10 +219,12 @@ func (s *GameService) runBallLoop(room string) {
 
 		if state.BallVX < 0 && state.BallX <= leftPaddleEdge && paddleHit(state.BallY, state.Player1YPosition) {
 			state.BallX = leftPaddleEdge
-			state.BallVX = -state.BallVX
+			state.BallVX = -state.BallVX * paddleHitSpeedMultiplier
+			state.BallVY *= paddleHitSpeedMultiplier
 		} else if state.BallVX > 0 && state.BallX >= rightPaddleEdge && paddleHit(state.BallY, state.Player2YPosition) {
 			state.BallX = rightPaddleEdge
-			state.BallVX = -state.BallVX
+			state.BallVX = -state.BallVX * paddleHitSpeedMultiplier
+			state.BallVY *= paddleHitSpeedMultiplier
 		}
 
 		updated := s.repo.Update(g)
