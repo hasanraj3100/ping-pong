@@ -63,12 +63,14 @@ scene("main", () => {
     window.ballX += window.ballVX * dt();
     window.ballY += window.ballVY * dt();
 
-    if (window.ballY < 0) {
-      window.ballY = 0;
-      window.ballVY = -window.ballVY;
-    } else if (window.ballY > SCREEN_H) {
-      window.ballY = SCREEN_H;
-      window.ballVY = -window.ballVY;
+    while (window.ballY < 0 || window.ballY > SCREEN_H) {
+      if (window.ballY < 0) {
+        window.ballY = -window.ballY;
+        window.ballVY = -window.ballVY;
+      } else if (window.ballY > SCREEN_H) {
+        window.ballY = 2 * SCREEN_H - window.ballY;
+        window.ballVY = -window.ballVY;
+      }
     }
 
     ball.pos.x = window.ballX - BALL_SIZE / 2;

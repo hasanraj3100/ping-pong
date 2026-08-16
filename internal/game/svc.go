@@ -177,12 +177,14 @@ func (s *GameService) runBallLoop(room string) {
 		state.BallX += state.BallVX * dt
 		state.BallY += state.BallVY * dt
 
-		if state.BallY < 0 {
-			state.BallY = 0
-			state.BallVY = -state.BallVY
-		} else if state.BallY > courtHeight {
-			state.BallY = courtHeight
-			state.BallVY = -state.BallVY
+		for state.BallY < 0 || state.BallY > courtHeight {
+			if state.BallY < 0 {
+				state.BallY = -state.BallY
+				state.BallVY = -state.BallVY
+			} else if state.BallY > courtHeight {
+				state.BallY = 2*courtHeight - state.BallY
+				state.BallVY = -state.BallVY
+			}
 		}
 
 		if state.BallX < 0 {
