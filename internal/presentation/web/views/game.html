@@ -75,14 +75,29 @@
       else if (msg.Type == "move") {
 
         if (msg.Player === "player1") {
-          if (myRole === "player1" && msg.Sequence < curr_sequence) return; // stale data
-          window.p1TargetY = msg.YPos;
+          if (myRole === "player1") {
+            if (msg.Sequence < curr_sequence) return; // stale data
+            if (Math.abs(msg.YPos - window.p1TargetY) > 0.01) {
+              // our prediction drifted from the server - correct it and snap
+              window.p1TargetY = msg.YPos;
+              window.p1ForceSnap = true;
+            }
+          } else {
+            window.p1TargetY = msg.YPos; // opponent paddle: always server-driven
+          }
           return;
         }
 
         if (msg.Player === "player2") {
-          if (myRole === "player2" && msg.Sequence < curr_sequence) return; // stale data
-          window.p2TargetY = msg.YPos;
+          if (myRole === "player2") {
+            if (msg.Sequence < curr_sequence) return; // stale data
+            if (Math.abs(msg.YPos - window.p2TargetY) > 0.01) {
+              window.p2TargetY = msg.YPos;
+              window.p2ForceSnap = true;
+            }
+          } else {
+            window.p2TargetY = msg.YPos; // opponent paddle: always server-driven
+          }
           return;
         }
 
