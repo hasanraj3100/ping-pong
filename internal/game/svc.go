@@ -1,6 +1,7 @@
 package game
 
 import (
+	"math/rand/v2"
 	"time"
 
 	"hasanraj3100/ping-pong/internal/domain"
@@ -239,6 +240,14 @@ func paddleHit(ballY, paddleY float32) bool {
 func resetBall(state *domain.GameData) {
 	state.BallX = courtWidth / 2
 	state.BallY = courtHeight / 2
+
 	state.BallVX = ballInitialVX
+	if rand.IntN(2) == 0 {
+		state.BallVX = -state.BallVX
+	}
+
 	state.BallVY = ballInitialVY
+	if rand.IntN(2) == 0 {
+		state.BallVY = -state.BallVY
+	}
 }
