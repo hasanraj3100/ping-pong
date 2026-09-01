@@ -35,15 +35,23 @@ internal/presentation/web/
 
 ### Prerequisites
 
-- Go 1.25+
+- Go 1.25+, **or** Docker + Docker Compose
 
 ### Run the server
+
+**Locally with Go:**
 
 ```bash
 go run ./cmd/server
 ```
 
-The server listens on `:8080`.
+**With Docker Compose:**
+
+```bash
+docker compose up --build
+```
+
+The server listens on `:8080` either way.
 
 ### Play a game
 
