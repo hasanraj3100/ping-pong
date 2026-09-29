@@ -112,6 +112,19 @@ func (h *Handler) WS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.svc.PlayerConnected(gameID, user.UUID)
+	defer h.svc.PlayerDisconnected(gameID, user.UUID)
+
+	for _, presence := range h.svc.PresenceSnapshot(gameID) {
+		d, err := json.Marshal(presence)
+		if err != nil {
+			continue
+		}
+		if err := conn.Write(ctx, websocket.MessageText, d); err != nil {
+			return
+		}
+	}
+
 	onMessage := func(data []byte) {
 		var msg ClientMsg
 		if err := json.Unmarshal(data, &msg); err != nil {

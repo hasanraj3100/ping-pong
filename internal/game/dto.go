@@ -42,3 +42,9 @@ type GameOverMsg struct {
 	Type   string
 	Winner string
 }
+
+type PresenceMsg struct {
+	Type      string
+	Player    string
+	Connected bool
+}

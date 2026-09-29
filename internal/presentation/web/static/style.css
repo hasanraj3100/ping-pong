@@ -165,6 +165,36 @@ button:hover,
   color: #16a34a;
 }
 
+.presence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: var(--subtitle-color);
+}
+
+.presence-badge .presence-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.presence-badge.online {
+  background: #ecfdf5;
+  color: #16a34a;
+}
+
+.presence-badge.offline {
+  background: #fef2f2;
+  color: var(--error);
+}
+
 .share-box {
   flex: 1;
   max-width: 260px;

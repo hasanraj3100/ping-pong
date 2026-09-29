@@ -2,6 +2,7 @@ package game
 
 import (
 	"math/rand/v2"
+	"sync"
 	"time"
 
 	"hasanraj3100/ping-pong/internal/domain"
@@ -31,10 +32,99 @@ const (
 type GameService struct {
 	repo        GameRepo
 	broadcaster Broadcaster
+
+	presenceMu sync.Mutex
+	presence   map[string]map[string]int // gameID -> role -> open connection count
 }
 
 func NewGameService(repo GameRepo, broadcaster Broadcaster) *GameService {
-	return &GameService{repo: repo, broadcaster: broadcaster}
+	return &GameService{repo: repo, broadcaster: broadcaster, presence: make(map[string]map[string]int)}
+}
+
+func roleOf(g domain.Game, userUUID string) string {
+	switch userUUID {
+	case g.Player1.UUID:
+		return "player1"
+	case g.Player2.UUID:
+		return "player2"
+	default:
+		return ""
+	}
+}
+
+func (s *GameService) PlayerConnected(gameID, userUUID string) {
+	g, ok := s.repo.FindByID(gameID)
+	if !ok {
+		return
+	}
+	role := roleOf(g, userUUID)
+	if role == "" {
+		return
+	}
+
+	s.presenceMu.Lock()
+	if s.presence[gameID] == nil {
+		s.presence[gameID] = make(map[string]int)
+	}
+	s.presence[gameID][role]++
+	becameConnected := s.presence[gameID][role] == 1
+	s.presenceMu.Unlock()
+
+	if becameConnected {
+		s.broadcaster.Broadcast(gameID, PresenceMsg{Type: "presence", Player: role, Connected: true})
+	}
+}
+
+func (s *GameService) PlayerDisconnected(gameID, userUUID string) {
+	g, ok := s.repo.FindByID(gameID)
+	if !ok {
+		return
+	}
+	role := roleOf(g, userUUID)
+	if role == "" {
+		return
+	}
+
+	s.presenceMu.Lock()
+	becameDisconnected := false
+	if s.presence[gameID][role] > 0 {
+		s.presence[gameID][role]--
+		becameDisconnected = s.presence[gameID][role] == 0
+	}
+	s.presenceMu.Unlock()
+
+	if becameDisconnected {
+		s.broadcaster.Broadcast(gameID, PresenceMsg{Type: "presence", Player: role, Connected: false})
+	}
+}
+
+// PresenceSnapshot reports the current connection state for every seated player.
+// A client only learns of presence *changes* via broadcast, which it misses for
+// anything that happened before it joined the room; this lets it bootstrap the
+// current state instead of assuming everyone is online.
+func (s *GameService) PresenceSnapshot(gameID string) []PresenceMsg {
+	g, ok := s.repo.FindByID(gameID)
+	if !ok {
+		return nil
+	}
+
+	roles := []string{"player1"}
+	if g.Player2.UUID != "" {
+		roles = append(roles, "player2")
+	}
+
+	s.presenceMu.Lock()
+	defer s.presenceMu.Unlock()
+
+	snapshot := make([]PresenceMsg, 0, len(roles))
+	for _, role := range roles {
+		snapshot = append(snapshot, PresenceMsg{
+			Type:      "presence",
+			Player:    role,
+			Connected: s.presence[gameID][role] > 0,
+		})
+	}
+	return snapshot
 }
 
 func (s *GameService) CreateGame(creator domain.User) domain.Game {
