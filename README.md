@@ -29,7 +29,7 @@ internal/realtime/     WebSocket hub — manages per-room connections and broadc
 internal/repository/   in-memory repositories for users and games
 internal/presentation/web/
   views/               HTML templates (welcome, game board)
-  static/              client JS/CSS + the Kaplay engine bundle
+  static/              client JS/CSS (Kaplay is loaded from the unpkg CDN)
 ```
 
 ## Getting Started
