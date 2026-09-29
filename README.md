@@ -8,7 +8,8 @@ A real-time, two-player Pong game written in Go. The server owns the ball physic
 - Shareable game links: create a match, send the URL to a friend, they auto-join as Player 2
 - Ready-up flow before each round starts
 - Live paddle and ball sync over WebSockets, with client-side ball extrapolation for smooth motion between server ticks
-- Ball speeds up on every paddle hit
+- Online/offline presence badges for both players, kept accurate across reconnects and multiple tabs
+- Ball speeds up on every paddle hit, and serves in a random direction after each point
 - Win condition at 10 points with a game-over broadcast to both players
 - No database — everything lives in-memory for the life of the process
 
@@ -66,7 +67,8 @@ The server listens on `:8080` either way.
 
 - **Auth:** lightweight — registering a name issues a UUID stored in a `uuid` cookie. There's no password or session expiry.
 - **Game creation/joining:** `POST /games` creates a game owned by the caller; `POST /games/{id}/join` (or simply visiting the game page as a second user) assigns Player 2.
-- **Realtime sync:** each game is a "room" in the WebSocket hub. Clients connect via `GET /games/{id}/ws`, send `move`/`ready` messages, and receive broadcasts (`move`, `ready`, `ball`, `score`, `game_over`) as JSON.
+- **Realtime sync:** each game is a "room" in the WebSocket hub. Clients connect via `GET /games/{id}/ws`, send `move`/`ready` messages, and receive broadcasts (`match_found`, `move`, `ready`, `ball`, `score`, `game_over`, `presence`) as JSON.
+- **Presence:** the server counts open connections per player, so a player shows as offline only once their last tab disconnects. It broadcasts a `presence` message whenever a player goes online or offline, and sends each newly connected client a snapshot of the current state.
 - **Physics loop:** once both players ready up, the server runs a fixed-tick (50ms) goroutine per game that advances the ball, resolves wall/paddle collisions, updates scores, and broadcasts state — the client only renders what it's told.
 
 ## API Reference
