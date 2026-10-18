@@ -62,15 +62,7 @@ func (s *GameService) PlayerConnected(gameID, userUUID string) {
 		return
 	}
 
-	s.presenceMu.Lock()
-	if s.presence[gameID] == nil {
-		s.presence[gameID] = make(map[string]int)
-	}
-	s.presence[gameID][role]++
-	becameConnected := s.presence[gameID][role] == 1
-	s.presenceMu.Unlock()
-
-	if becameConnected {
+	if s.incPresence(gameID, role) {
 		s.broadcaster.Broadcast(gameID, PresenceMsg{Type: "presence", Player: role, Connected: true})
 	}
 }
@@ -85,17 +77,38 @@ func (s *GameService) PlayerDisconnected(gameID, userUUID string) {
 		return
 	}
 
-	s.presenceMu.Lock()
-	becameDisconnected := false
-	if s.presence[gameID][role] > 0 {
-		s.presence[gameID][role]--
-		becameDisconnected = s.presence[gameID][role] == 0
-	}
-	s.presenceMu.Unlock()
-
-	if becameDisconnected {
+	if s.decPresence(gameID, role) {
 		s.broadcaster.Broadcast(gameID, PresenceMsg{Type: "presence", Player: role, Connected: false})
 	}
+}
+
+func (s *GameService) incPresence(gameID, role string) bool {
+	s.presenceMu.Lock()
+	defer s.presenceMu.Unlock()
+
+	if s.presence[gameID] == nil {
+		s.presence[gameID] = make(map[string]int)
+	}
+	s.presence[gameID][role]++
+	return s.presence[gameID][role] == 1
+}
+
+func (s *GameService) decPresence(gameID, role string) bool {
+	s.presenceMu.Lock()
+	defer s.presenceMu.Unlock()
+
+	if s.presence[gameID][role] == 0 {
+		return false
+	}
+	s.presence[gameID][role]--
+	if s.presence[gameID][role] > 0 {
+		return false
+	}
+	delete(s.presence[gameID], role)
+	if len(s.presence[gameID]) == 0 {
+		delete(s.presence, gameID)
+	}
+	return true
 }
 
 // PresenceSnapshot reports the current connection state for every seated player.
