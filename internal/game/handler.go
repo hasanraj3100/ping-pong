@@ -90,8 +90,7 @@ func (h *Handler) WS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gameID := r.PathValue("id")
-	g, ok := h.svc.GetGame(gameID)
-	if !ok {
+	if _, ok := h.svc.GetGame(gameID); !ok {
 		http.Error(w, "game not found", http.StatusNotFound)
 		return
 	}
@@ -104,7 +103,11 @@ func (h *Handler) WS(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	data, err := json.Marshal(g)
+	snapshot, ok := h.svc.StateSnapshot(gameID)
+	if !ok {
+		return
+	}
+	data, err := json.Marshal(snapshot)
 	if err != nil {
 		return
 	}

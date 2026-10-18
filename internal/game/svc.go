@@ -140,6 +140,35 @@ func (s *GameService) PresenceSnapshot(gameID string) []PresenceMsg {
 	return snapshot
 }
 
+func (s *GameService) StateSnapshot(gameID string) (StateMsg, bool) {
+	g, ok := s.repo.FindByID(gameID)
+	if !ok {
+		return StateMsg{}, false
+	}
+	state := g.State
+
+	msg := StateMsg{
+		Type:         "state",
+		Player1Score: state.Player1Score,
+		Player2Score: state.Player2Score,
+		Player1Ready: state.Player1Ready,
+		Player2Ready: state.Player2Ready,
+		Player1YPos:  state.Player1YPosition,
+		Player2YPos:  state.Player2YPosition,
+		BallX:        courtWidth / 2,
+		BallY:        courtHeight / 2,
+		Winner:       state.Winner,
+	}
+
+	if state.Player1Ready && state.Player2Ready {
+		msg.BallX = state.BallX
+		msg.BallY = state.BallY
+		msg.BallVX = state.BallVX
+		msg.BallVY = state.BallVY
+	}
+	return msg, true
+}
+
 func (s *GameService) CreateGame(creator domain.User) domain.Game {
 	g := s.repo.Create(creator)
 	s.broadcaster.Broadcast(g.ID, g)

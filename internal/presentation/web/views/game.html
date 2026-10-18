@@ -67,6 +67,26 @@
     const wsProtocol = location.protocol === "https:" ? "wss:" : "ws:";
     const ws = new WebSocket(`${wsProtocol}//${location.host}/games/${gameID}/ws`);
 
+    function renderScore(player1Score, player2Score) {
+      document.getElementById("player1-score").textContent = player1Score;
+      document.getElementById("player2-score").textContent = player2Score;
+    }
+
+    function renderReady(player1Ready, player2Ready) {
+      const player1ReadyEl = document.getElementById("player1-ready");
+      const player2ReadyEl = document.getElementById("player2-ready");
+      const player1ReadyState = document.getElementById("player1ReadyState");
+      const player2ReadyState = document.getElementById("player2ReadyState");
+
+      player1ReadyEl.classList.toggle("ready", player1Ready);
+      player1ReadyEl.classList.toggle("not-ready", !player1Ready);
+      player1ReadyState.textContent = player1Ready ? "Ready" : "Not Ready";
+
+      player2ReadyEl.classList.toggle("ready", player2Ready);
+      player2ReadyEl.classList.toggle("not-ready", !player2Ready);
+      player2ReadyState.textContent = player2Ready ? "Ready" : "Not Ready";
+    }
+
     ws.addEventListener("message", (event) => {
       const msg = JSON.parse(event.data);
 
@@ -124,28 +144,32 @@
       }
 
       else if (msg.Type == "score") {
-        document.getElementById("player1-score").textContent = msg.Player1Score;
-        document.getElementById("player2-score").textContent = msg.Player2Score;
+        renderScore(msg.Player1Score, msg.Player2Score);
         curr_ready_status = false;
         return;
       }
 
       else if (msg.Type == "ready") {
-        const player1Ready = msg.Player1Ready;
-        const player2Ready = msg.Player2Ready;
+        renderReady(msg.Player1Ready, msg.Player2Ready);
+      }
 
-        const player1ReadyEl = document.getElementById("player1-ready");
-        const player2ReadyEl = document.getElementById("player2-ready");
-        const player1ReadyState = document.getElementById("player1ReadyState");
-        const player2ReadyState = document.getElementById("player2ReadyState");
+      else if (msg.Type == "state") {
+        renderScore(msg.Player1Score, msg.Player2Score);
+        renderReady(msg.Player1Ready, msg.Player2Ready);
 
-        player1ReadyEl.classList.toggle("ready", player1Ready);
-        player1ReadyEl.classList.toggle("not-ready", !player1Ready);
-        player1ReadyState.textContent = player1Ready ? "Ready" : "Not Ready";
+        if (myRole === "player1") curr_ready_status = msg.Player1Ready;
+        if (myRole === "player2") curr_ready_status = msg.Player2Ready;
 
-        player2ReadyEl.classList.toggle("ready", player2Ready);
-        player2ReadyEl.classList.toggle("not-ready", !player2Ready);
-        player2ReadyState.textContent = player2Ready ? "Ready" : "Not Ready";
+        window.p1TargetY = msg.Player1YPos;
+        window.p2TargetY = msg.Player2YPos;
+        window.p1ForceSnap = true;
+        window.p2ForceSnap = true;
+
+        window.ballX = msg.BallX;
+        window.ballY = msg.BallY;
+        window.ballVX = msg.BallVX;
+        window.ballVY = msg.BallVY;
+        return;
       }
 
       else if (msg.Type == "presence") {

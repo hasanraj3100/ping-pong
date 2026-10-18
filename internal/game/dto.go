@@ -48,3 +48,18 @@ type PresenceMsg struct {
 	Player    string
 	Connected bool
 }
+
+type StateMsg struct {
+	Type         string
+	Player1Score int
+	Player2Score int
+	Player1Ready bool
+	Player2Ready bool
+	Player1YPos  float32
+	Player2YPos  float32
+	BallX        float32
+	BallY        float32
+	BallVX       float32
+	BallVY       float32
+	Winner       string
+}
