@@ -1,6 +1,7 @@
 package game
 
 import (
+	"math"
 	"math/rand/v2"
 	"sync"
 	"time"
@@ -19,8 +20,9 @@ const (
 	paddleWidth  = 15
 	paddleHeight = 80
 
-	ballInitialVX = 150
-	ballInitialVY = 90
+	ballServeSpeed = 175
+	minServeAngle  = 15 * math.Pi / 180
+	maxServeAngle  = 45 * math.Pi / 180
 
 	paddleHitSpeedMultiplier = 1.1
 
@@ -375,13 +377,14 @@ func resetBall(state *domain.GameData) {
 	state.BallX = courtWidth / 2
 	state.BallY = courtHeight / 2
 
-	state.BallVX = ballInitialVX
+	angle := minServeAngle + rand.Float64()*(maxServeAngle-minServeAngle)
+	if rand.IntN(2) == 0 {
+		angle = -angle
+	}
+
+	state.BallVX = float32(ballServeSpeed * math.Cos(angle))
 	if rand.IntN(2) == 0 {
 		state.BallVX = -state.BallVX
 	}
-
-	state.BallVY = ballInitialVY
-	if rand.IntN(2) == 0 {
-		state.BallVY = -state.BallVY
-	}
+	state.BallVY = float32(ballServeSpeed * math.Sin(angle))
 }
