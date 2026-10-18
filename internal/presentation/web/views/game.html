@@ -187,15 +187,18 @@
     const MOVE_INTERVAL_MS = 50;
     const pressedKeys = { up: false, down: false, space : false };
 
+    const UP_KEYS = ["ArrowUp", "w", "W"];
+    const DOWN_KEYS = ["ArrowDown", "s", "S"];
+
     document.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowUp") pressedKeys.up = true;
-      if (event.key === "ArrowDown") pressedKeys.down = true;
+      if (UP_KEYS.includes(event.key)) pressedKeys.up = true;
+      if (DOWN_KEYS.includes(event.key)) pressedKeys.down = true;
       if (event.key === " ") pressedKeys.space = true;
     });
 
     document.addEventListener("keyup", (event) => {
-      if (event.key === "ArrowUp") pressedKeys.up = false;
-      if (event.key === "ArrowDown") pressedKeys.down = false;
+      if (UP_KEYS.includes(event.key)) pressedKeys.up = false;
+      if (DOWN_KEYS.includes(event.key)) pressedKeys.down = false;
       if (event.key === " ") pressedKeys.space = false;
     });
 
