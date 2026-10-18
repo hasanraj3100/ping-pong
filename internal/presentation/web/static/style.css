@@ -244,3 +244,86 @@ button:hover,
     flex-direction: column;
   }
 }
+
+.game-stage {
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.controls-hint {
+  margin: 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+}
+
+.controls-hint kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  margin: 0 0.1rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.game-over {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 10;
+}
+
+.game-over.hidden {
+  display: none;
+}
+
+.game-over-card {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+}
+
+.game-over-card h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  color: var(--text-color);
+  word-break: break-word;
+}
+
+.game-over-card .subtitle {
+  margin-bottom: 1rem;
+}
+
+.game-over-score {
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.game-over-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+button.secondary {
+  background: #f3f4f6;
+  color: var(--text-color);
+}
+
+button.secondary:hover {
+  background: #e5e7eb;
+}

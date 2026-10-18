@@ -9,7 +9,7 @@
 <body class="game-page">
   <div class="game-card">
     <div class="player">
-      <h2>{{.Game.Player1.Name}}</h2>
+      <h2 id="player1-name">{{.Game.Player1.Name}}</h2>
       <span id="player1-presence" class="presence-badge online">
         <span class="presence-dot"></span><span id="player1PresenceState">Online</span>
       </span>
@@ -50,7 +50,25 @@
   </div>
 
   <div class="game-stage">
+    {{if ne .Role "spectator"}}
+      <p id="controls-hint" class="controls-hint">
+        <kbd>Space</kbd> to ready up &middot; starts when both are ready &middot;
+        <kbd>W</kbd><kbd>S</kbd> or <kbd>&uarr;</kbd><kbd>&darr;</kbd> to move
+      </p>
+    {{end}}
     <canvas id="game-canvas"></canvas>
+  </div>
+
+  <div id="game-over" class="game-over hidden" role="dialog" aria-modal="true" aria-labelledby="game-over-title">
+    <div class="game-over-card">
+      <h2 id="game-over-title"></h2>
+      <p id="game-over-subtitle" class="subtitle"></p>
+      <div class="game-over-score" id="game-over-score"></div>
+      <div class="game-over-actions">
+        <a href="/welcome" class="button-link">Back to lobby</a>
+        <button id="game-over-close" type="button" class="secondary">Close</button>
+      </div>
+    </div>
   </div>
   <script>
     const myRole = "{{.Role}}"; // "player1", "player2", or "spectator"
@@ -71,6 +89,26 @@
       document.getElementById("player1-score").textContent = player1Score;
       document.getElementById("player2-score").textContent = player2Score;
     }
+
+    function showGameOver(winner) {
+      const winnerName = document.getElementById(`${winner}-name`).textContent;
+      const player1Score = document.getElementById("player1-score").textContent;
+      const player2Score = document.getElementById("player2-score").textContent;
+
+      let subtitle = "Game over";
+      if (myRole === winner) subtitle = "You won! 🎉";
+      else if (myRole !== "spectator") subtitle = "Better luck next time";
+
+      document.getElementById("game-over-title").textContent = `${winnerName} wins!`;
+      document.getElementById("game-over-subtitle").textContent = subtitle;
+      document.getElementById("game-over-score").textContent = `${player1Score} – ${player2Score}`;
+      document.getElementById("game-over").classList.remove("hidden");
+      document.getElementById("controls-hint")?.classList.add("hidden");
+    }
+
+    document.getElementById("game-over-close").addEventListener("click", () => {
+      document.getElementById("game-over").classList.add("hidden");
+    });
 
     function renderReady(player1Ready, player2Ready) {
       const player1ReadyEl = document.getElementById("player1-ready");
@@ -169,6 +207,13 @@
         window.ballY = msg.BallY;
         window.ballVX = msg.BallVX;
         window.ballVY = msg.BallVY;
+
+        if (msg.Winner) showGameOver(msg.Winner);
+        return;
+      }
+
+      else if (msg.Type == "game_over") {
+        showGameOver(msg.Winner);
         return;
       }
 
